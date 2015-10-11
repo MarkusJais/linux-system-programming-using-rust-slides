@@ -57,7 +57,7 @@
 			<section>
 				<h2>Programming languages for System Programming</h2>
 				<p>
-					C, C++
+					C, C++,
 				</p>
 
 			</section>
@@ -66,7 +66,12 @@
 			<section>
 				<h2>Shortcomings of traditional languages</h2>
 				<p>
-					C, C++
+					<ul>
+						<li class="fragment">Possibility for memory leaks</li>
+						<li class="fragment">Undefined behaviour</li>
+						<li class="fragment">Security bugs</li>
+						<li class="fragment">very low level (but look at C++11/14)</li>
+					</ul>
 				</p>
 
 			</section>
@@ -74,7 +79,12 @@
 			<section>
 				<h2>The JVM is great, but...</h2>
 				<p>
-					C, C++
+					<ul>
+						<li class="fragment">Less control than C/C++</li>
+						<li class="fragment">Overhead (but often very small)</li>
+						<li class="fragment">Gargabe collection (awesome most of the time but can be a show stopper)</li>
+						<li class="fragment">C interface not easy to work with</li>
+					</ul>
 				</p>
 
 			</section>
@@ -83,15 +93,6 @@
 				<h2>C++ sidenote</h2>
 				Use C++11/14
 			</section>
-
-
-
-			<section>
-				<h2>A new language?</h2>
-				TODO: Add Rust logo
-			</section>
-
-
 
 			<section>
 				<h2>Why Rust?</h2>
@@ -107,6 +108,11 @@
 			<section>
 				<h2>Why Rust? There is more!</h2>
 				<ul>
+					<li class="fragment">Memory safety</li>
+					<li class="fragment">Safe concurrency</li>
+					<li class="fragment">Strong type system</li>
+					<li class="fragment">Great std lib</li>
+					<li class="fragment">Fantastic community</li>
 				</ul>
 			</section>
 
@@ -154,19 +160,23 @@
 				<h2>Signal in Rust</h2>
 			</section>
 
-
 			<section>
-				<h2>Processes in the Standard Library</h2>
+				<h2>Executing external processes with execvp</h2>
 			</section>
 
 
 			<section>
-				<h2>message queues</h2>
+				<h2>Executing external processes with standard library</h2>
 			</section>
 
 
 			<section>
-				<h2>unsage</h2>
+				<h2>Posix Message queues</h2>
+			</section>
+
+
+			<section>
+				<h2>unsafe</h2>
 			</section>
 
 			<section>
@@ -179,7 +189,44 @@
 
 
 			<section>
-				<h2>networkingC</h2>
+				<h2>Basic Rust concurrency</h2>
+			</section>
+
+
+			<section>
+				<h2>Simple threads</h2>
+			</section>
+
+
+			<section>
+				<h2>Mutexes</h2>
+			</section>
+
+			<section>
+				<h2>Don't overdo looks</h2>
+			</section>
+
+			<section>
+				<h2>Channels</h2>
+			</section>
+
+			<section>
+				<h2>Rust can't solve concurrency in distributed systems</h2>
+				TODO add image of distributed database
+			</section>
+
+
+			<section>
+				<h2>What Rust would be great for</h2>
+				<ul>
+					<li class="fragment">Database (relational or NoSQL)</li>
+					<li class="fragment">Queues, distributed logs</li>
+					<li class="fragment">Web servers</li>
+					<li class="fragment">Big Data incl. stream processing</li>
+					<li class="fragment">VMs</li>
+					<li class="fragment">Monitoring</li>
+					<li class="fragment">Lot's of other things</li>
+				</ul>
 			</section>
 
 
@@ -203,18 +250,6 @@
 
 			<section>
 				<h2>Github links</h2>
-			</section>
-
-
-			<section>
-				<h2>Where Rust will be great</h2>
-				<ul>
-					<li class="fragment">Web Servers</li>
-					<li class="fragment">Queues</li>
-					<li class="fragment">NoSQL</li>
-					<li class="fragment">Monitoring</li>
-				</ul>
-
 			</section>
 
 
