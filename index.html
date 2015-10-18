@@ -121,12 +121,6 @@
 				</ul>
 			</section>
 
-
-			<section>
-				<h2>What is nix-rust?</h2>
-			</section>
-
-
 			<section>
 				<h2>Fork in C</h2>
 
@@ -162,39 +156,92 @@ int main(int argc, char *argv[])
 			<section>
 				<h2>Fork in Rust</h2>
 
-
-
-			</section>
-
-
-			<section>
-				<h2>Fork and wait in C</h2>
 				<pre ng-non-bindable>
-					<code class="c">
+					<code class="rust">
+	extern crate nix;
+
+	use nix::unistd::{fork, getpid, getppid};
+	use nix::unistd::Fork::{Parent, Child};
 
 
 
+	fn main() {
+	    let pid = fork();
+	    match pid {
+	        Ok(Child) => {
+	            println!("in child process with pid: {} and parent pid:{}", getpid(), getppid());
+	        }
+	        Ok(Parent(child_pid)) => {
+	            println!("in parent process with pid: {} and child pid:{}", getpid(), child_pid);
+	        }
+	        // panic, fork should never fail unless there is a serious problem with the OS
+	        Err(_) => panic!("Error: Fork Failed")
+	    }
+	}
 
 					</code>
 				</pre>
 
+
+
 			</section>
+
 
 
 			<section>
 				<h2>Fork and wait in Rust</h2>
+				<pre ng-non-bindable>
+					<code class="rust">
+extern crate nix;
+
+use nix::unistd::{fork, getpid, getppid};
+use nix::unistd::Fork::{Parent, Child};
+use nix::sys::wait::waitpid;
+use nix::sys::wait::WaitStatus;
+
+
+
+fn main() {
+    let pid = fork();
+    match pid {
+        Ok(Child) => {
+            println!("in child process with pid: {} and parent pid:{}", getpid(), getppid());
+        } // ignore child here
+
+        Ok(Parent(child_pid)) => {
+
+            println!("in parent process with pid: {} and child pid:{}", getpid(), child_pid);
+
+            let wait_status = waitpid(child_pid, None);
+            match wait_status {
+                 Ok(WaitStatus::Exited(pid, status)) =>  {
+                    println!("child process with pid {} has successfull exited with status: {}", pid, status);
+                },
+
+                // panic, must never happen
+                Ok(_) => panic!("Child still alive, should never happen"),
+
+                // panic, waitpid should never fail
+                Err(_) => panic!("Error: waitpid Failed")
+            }
+
+        },
+        // panic, fork should never fail unless there is a serious problem with the OS
+        Err(_) => panic!("Error: Fork Failed")
+    }
+}
+					</code>
+				</pre>
+
+
 			</section>
 
 
 			<section>
-				<h2>Pipe  in C</h2>
+				<h2>Pipes in C</h2>
+
 				<pre ng-non-bindable>
 					<code class="c">
-
-#include &lt;unistd.h&gt;
-#include &lt;stdio.h&gt;
-#include &lt;stdlib.h&gt;
-#include &lt;string.h&gt;
 #include &lt;sys/types.h&gt;
 #include &lt;sys/wait.h&gt;
 
@@ -247,6 +294,31 @@ int main(void) {
 				<pre ng-non-bindable>
 					<code class="rust">
 
+extern crate nix;
+
+use nix::unistd::{fork, read, write, pipe};
+use nix::unistd::Fork::{Parent, Child};
+use std::str;
+
+fn main() {
+    let (reader, writer) = pipe().unwrap();
+    let msg = "hello from parent";
+    let pid = fork();
+    match pid {
+        Ok(Child)=> {
+            let mut read_buf = [0u8; 32];
+            let bytes_read = read(reader, &mut read_buf).unwrap();
+            let msg_received = str::from_utf8(&read_buf[0 .. bytes_read]).unwrap();
+            println!("received from partent:{:?}", msg_received);
+
+        }
+        Ok(Parent(child_pid)) => {
+            println!("sending to child with pid:{}", child_pid);
+            write(writer, msg.as_bytes()).unwrap();
+        },
+        Err(_) => panic!("Error: Fork Failed")
+    }
+}
 
 
 
@@ -257,13 +329,13 @@ int main(void) {
 			</section>
 
 
-			<section>
+			<!-- <section>
 				<h2>Signal in C</h2>
 			</section>
 
 			<section>
 				<h2>Signal in Rust</h2>
-			</section>
+			</section> -->
 
 			<section>
 				<h2>Executing external processes with execvp</h2>
@@ -271,6 +343,52 @@ int main(void) {
 				<pre ng-non-bindable>
 					<code class="rust">
 
+extern crate nix;
+
+use nix::unistd::{fork, getpid, getppid, execvp};
+use nix::unistd::Fork::{Parent, Child};
+use nix::sys::wait::waitpid;
+use nix::sys::wait::WaitStatus;
+use std::ffi::CString;
+
+
+
+fn main() {
+    let pid = fork();
+    match pid {
+        Ok(Child) => {
+            let command =  &amp;CString::new("/bin/cat").unwrap();
+            let arguments =
+                    &amp;[
+                    CString::new(b"/bin/cat".as_ref()).unwrap(),
+                    CString::new(b"/tmp/file.txt".as_ref()).unwrap(),
+                    CString::new(b"-n".as_ref()).unwrap(),
+                    ];
+            execvp(command, arguments).unwrap();
+        }
+        Ok(Parent(child_pid)) => {
+
+            println!("in parent process with pid: {} and child pid:{}", getpid(), child_pid);
+
+            let wait_status = waitpid(child_pid, None);
+            match wait_status {
+                // assert that waitpid returned correct status and the pid is the one of the child
+                Ok(WaitStatus::Exited(pid, status)) =>  {
+                    println!("child process with pid {} exited with status: {}", pid, status);
+                },
+
+                // panic, must never happen
+                Ok(_) => panic!("Child still alive, should never happen"),
+
+                // panic, waitpid should never fail
+                Err(_) => panic!("Error: waitpid Failed")
+            }
+
+        },
+        // panic, fork should never fail unless there is a serious problem with the OS
+        Err(_) => panic!("Error: Fork Failed")
+    }
+}
 
 
 
@@ -285,6 +403,62 @@ int main(void) {
 				<pre ng-non-bindable>
 					<code class="rust">
 
+use std::process::Command;
+
+
+// running other program as a child
+// this is a verbose solution with pattern matching.
+// see run_process2 for a shorter version
+fn main() {
+    let child_process = Command::new("/bin/cat")
+                            .arg("/tmp/file.txt")
+                            .spawn();
+
+    match child_process {
+        Ok(mut child) => {
+            match child.wait() {
+                Ok(status) => {
+                    println!("child exited with status:{:?}", status);
+                }
+
+                Err(err) => {
+                    println!("error waiting for child: {:?}", err);
+                }
+            }
+        }
+        Err(err) => {
+            println!("error spawning child: {:?}", err);
+        }
+    }
+}
+
+
+
+					</code>
+				</pre>
+			</section>
+
+			<section>
+				<h2>Executing external processes with standard library - shorter version</h2>
+				<pre ng-non-bindable>
+					<code class="rust">
+
+use std::process::Command;
+
+
+// running other program as a child
+// shorter version than run_process1 avoiding pattern matching
+fn main() {
+    let mut child_process = Command::new("/bin/catss")
+                            .arg("/tmp/file.txt")
+                            .spawn()
+                            .unwrap_or_else(|error| { panic!("error executing child: {}", error) });
+
+    let exit_status = child_process.wait().
+                        unwrap_or_else(|error| { panic!("error waiting on child: {}", error) });
+
+    println!("Exit status:{:?}", exit_status);
+}
 
 
 
@@ -299,7 +473,7 @@ int main(void) {
 					<code class="rust">
 
 
-
+						TDB
 
 					</code>
 				</pre>
@@ -308,15 +482,16 @@ int main(void) {
 
 			<section>
 				<h2>unsafe</h2>
+				TBD
 			</section>
 
-			<section>
+			<!-- <section>
 				<h2>File IO</h2>
 			</section>
 
 			<section>
 				<h2>File stats</h2>
-			</section>
+			</section> -->
 
 
 			<section>
@@ -325,7 +500,7 @@ int main(void) {
 					<code class="rust">
 
 
-
+						TBD, some general notes
 
 					</code>
 				</pre>
@@ -336,6 +511,29 @@ int main(void) {
 				<pre ng-non-bindable>
 					<code class="rust">
 
+					use std::thread;
+
+// Broken! An example to show how it does NOT work correctly.
+// Don't use this code!!!!! It will not compile!
+fn main() {
+
+    let strings = vec![
+        String::from("Rust is awesome"),
+        String::from("Rust can make system programming easier"),
+        String::from("multi-core programming is hard but Rust can make it easier")
+    ];
+    let mut threads = vec![];
+
+    for i in 0..strings.len() {
+        threads.push(thread::spawn(move || {
+            println!("{:?}", strings);  // doesn't compile: capture of moved value: `strings`
+        }));
+    }
+
+    for thread in threads {
+        let res = thread.join();
+    }
+}
 
 
 
@@ -349,11 +547,48 @@ int main(void) {
 				<pre ng-non-bindable>
 					<code class="rust">
 
+use std::thread;
+use std::sync::Arc;
+
+fn main() {
+
+    let strings = vec![
+        String::from("Rust is awesome"),
+        String::from("Rust can make system programming easier"),
+        String::from("multi-core programming is hard but Rust can make it easier")
+    ];
+    let mut threads = vec![];
+
+    let arc_vec = Arc::new(strings);
+
+
+
+    for i in 0..3 {
+        let strings_clone = arc_vec.clone();
+        threads.push(thread::spawn(move || {
+            println!("{:?}", strings_clone[i]);
+        }));
+    }
+
+    for thread in threads {
+        let _ = thread.join();
+    }
+
+    println!("\ndone!\n");
+}
 
 
 
 					</code>
 				</pre>
+			</section>
+
+			<section>
+				<h2>The 2 phases when working with shared mutable state</h2>
+				<ul>
+					<li class="fragment">1st: WTF am I doing?</li>
+					<li class="fragment">2nd: WTF have I done?</li>
+				</ul>
 			</section>
 
 
@@ -362,6 +597,39 @@ int main(void) {
 				<pre ng-non-bindable>
 					<code class="rust">
 
+use std::thread;
+use std::sync::{Arc, Mutex};
+use std::collections::HashMap;
+
+// Broken! An example to show how it does NOT work correctly.
+// Don't use this code!!!!! It will not compile!
+fn main() {
+    let strings = vec![
+        String::from("Rust is awesome"),
+        String::from("Rust can make system programming easier"),
+        String::from("multi-core programming is hard but Rust can make it easier")
+    ];
+    let mut threads = vec![];
+    let counts: HashMap<String, i32> = HashMap::new();
+    let strings = Arc::new(strings);
+    let counts = Arc::new(counts);
+    for i in 0..3 {
+        let strings = strings.clone();
+        let counts = counts.clone();
+        threads.push(thread::spawn(move || {
+            let words: Vec&lt;&aml;str&gt; = strings[i].split_whitespace().collect();
+            for word in words {
+                let counter = counts.entry(String::from(word)).or_insert(0);  // does not compile!
+                *counter += 1;
+            }
+        }));
+    }
+    for thread in threads {
+        let _ = thread.join();
+    }
+    println!("counts:\n{:?}", counts);
+    println!("\ndone!\n");
+}
 
 
 
@@ -375,6 +643,39 @@ int main(void) {
 				<h2>Mutexes: Shared mutable state - working</h2>
 				<pre ng-non-bindable>
 					<code class="rust">
+
+use std::thread;
+use std::sync::{Arc, Mutex};
+use std::collections::HashMap;
+
+fn main() {
+    let strings = vec![
+        String::from("Rust is awesome"),
+        String::from("Rust can make system programming easier"),
+        String::from("multi-core programming is hard but Rust can make it easier")
+    ];
+    let mut threads = vec![];
+    let counts: HashMap&lt;String, i32&gt; = HashMap::new();
+    let strings = Arc::new(strings);
+    let counts = Arc::new(Mutex::new(counts));
+    for i in 0..3 {
+        let strings = strings.clone();
+        let counts = counts.clone();
+        threads.push(thread::spawn(move || {
+            let words: Vec&lt;&amp;str&gt; = strings[i].split_whitespace().collect();
+            let mut arc_counts = counts.lock().unwrap();
+            for word in words {
+                let counter = arc_counts.entry(String::from(word)).or_insert(0);
+                *counter += 1;
+            }
+        }));
+    }
+    for thread in threads {
+        let _ = thread.join();
+    }
+    println!("counts:\n{:?}", *counts.lock().unwrap());
+    println!("\ndone!\n");
+}
 
 
 
@@ -407,7 +708,7 @@ fn main() {
         let strings = strings.clone();
         let tx = tx.clone();
         threads.push(thread::spawn(move || {
-            let words: Vec&lt;&str&gt; = strings[i].split_whitespace().collect();
+            let words: Vec&lt;&amp;str&gt; = strings[i].split_whitespace().collect();
             let count = words.iter().filter(|x| **x == "Rust").count();
             tx.send(count).unwrap();
         }));
@@ -432,6 +733,13 @@ fn main() {
 
 			<section>
 				<h2>Don't overdo locks</h2>
+				<ul>
+					<li class="fragment">Logs are not free!</li>
+					<li class="fragment">Can kill scalability across many cores (Amdahls's Law)</li>
+					<li class="fragment">Use lock-free data structures where possible</li>
+					<li class="fragment">Avoid shared mutable state to avoid locks</li>
+					<li class="fragment" style="font-weight: bold">Most important! !!!Do performance tests!!!</li>
+				</ul>
 			</section>
 
 
