@@ -4,7 +4,7 @@
 <head>
 	<meta charset="utf-8">
 
-	<title>reveal.js - The HTML Presentation Framework</title>
+	<title>Linux System Programming with Rust</title>
 
 	<meta name="description" content="A framework for easily creating beautiful presentations using HTML">
 	<meta name="author" content="Hakim El Hattab">
@@ -18,7 +18,11 @@
 	<link rel="stylesheet" href="css/theme/black.css" id="theme">
 
 	<!-- Code syntax highlighting -->
-	<link rel="stylesheet" href="lib/css/zenburn.css">
+	<!-- <link rel="stylesheet" href="lib/css/zenburn.css"> -->
+	<link rel="stylesheet" href="lib/css/darkula.css">
+
+
+	tomorrow-night-bright.css
 
 	<!-- Printing and PDF exports -->
 	<script>
@@ -43,7 +47,7 @@
 			<section>
 				<h1>Linux System Programming with Rust</h1>
 				<p>
-					<small><a href="http://www.markusjais.com">Markus Jais</a> / <a href="http://twitter.com/MarkusJais">@MarkusJais</a></small>
+					<small><a href="http://www.markusjais.com">www.markusjais.com</a> / <a href="http://twitter.com/MarkusJais">@MarkusJais</a></small>
 				</p>
 			</section>
 
@@ -57,7 +61,7 @@
 			<section>
 				<h2>Programming languages for System Programming</h2>
 				<p>
-					C, C++,
+					C, C++
 				</p>
 
 			</section>
@@ -69,6 +73,7 @@
 					<ul>
 						<li class="fragment">Possibility for memory leaks</li>
 						<li class="fragment">Undefined behaviour</li>
+						<li class="fragment">Segfaults</li>
 						<li class="fragment">Security bugs</li>
 						<li class="fragment">very low level (but look at C++11/14)</li>
 					</ul>
@@ -124,16 +129,55 @@
 
 			<section>
 				<h2>Fork in C</h2>
+
+				<pre ng-non-bindable>
+					<code class="c">
+
+#include &lt;unistd.h&gt;
+#include &lt;stdio.h&gt;
+#include &lt;sys/types.h&gt;  // necessary to compile with -std=c11, otherwise pid_t is not found by gcc
+
+// basic example showing fork(), getpid() and getppid()
+int main(int argc, char *argv[])
+{
+    pid_t pid = fork();
+
+    if(pid > 0) {
+        printf("In parent process with pid:%d\n", getpid());
+    } else if (pid == 0) {
+        printf("In child process with pid:%d and parent pid:%d\n", getpid(), getppid());
+    } else {
+        printf("fork() failed!");
+        return -1;
+    }
+    return 0;
+}
+
+					</code>
+				</pre>
+
 			</section>
 
 
 			<section>
 				<h2>Fork in Rust</h2>
+
+
+
 			</section>
 
 
 			<section>
 				<h2>Fork and wait in C</h2>
+				<pre ng-non-bindable>
+					<code class="c">
+
+
+
+
+					</code>
+				</pre>
+
 			</section>
 
 
@@ -144,11 +188,72 @@
 
 			<section>
 				<h2>Pipe  in C</h2>
+				<pre ng-non-bindable>
+					<code class="c">
+
+#include &lt;unistd.h&gt;
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+#include &lt;sys/types.h&gt;
+#include &lt;sys/wait.h&gt;
+
+#define READ_BUF_SIZE 80
+
+void exit_with_failure(char *message) {
+	perror(message);
+	exit(EXIT_FAILURE);
+}
+
+
+int main(void) {
+	int n;
+	int pipe_fd[2];
+	pid_t pid;
+	char msg [] = "hello from parent\n";
+
+	if (pipe(pipe_fd) < 0)
+		exit_with_failure("pipe error");
+	if ((pid = fork()) < 0) {
+		exit_with_failure("fork error");
+	} else if (pid > 0) {
+		// in parent, closing read end of pipe
+		close(pipe_fd[0]);
+		write(pipe_fd[1], msg, strlen(msg));
+	} else {
+		// in child, closing write end of pipe
+		close(pipe_fd[1]);
+		char line[READ_BUF_SIZE];
+		n = read(pipe_fd[0], line, READ_BUF_SIZE);
+		write(STDOUT_FILENO, line, n);
+	}
+	exit(EXIT_SUCCESS);
+}
+
+
+
+					</code>
+				</pre>
+
+
+
+
 			</section>
 
 
 			<section>
 				<h2>Pipe in Rust</h2>
+
+				<pre ng-non-bindable>
+					<code class="rust">
+
+
+
+
+					</code>
+				</pre>
+
+
 			</section>
 
 
@@ -162,16 +267,42 @@
 
 			<section>
 				<h2>Executing external processes with execvp</h2>
+
+				<pre ng-non-bindable>
+					<code class="rust">
+
+
+
+
+					</code>
+				</pre>
+
 			</section>
 
 
 			<section>
 				<h2>Executing external processes with standard library</h2>
+				<pre ng-non-bindable>
+					<code class="rust">
+
+
+
+
+					</code>
+				</pre>
 			</section>
 
 
 			<section>
 				<h2>Posix Message queues</h2>
+				<pre ng-non-bindable>
+					<code class="rust">
+
+
+
+
+					</code>
+				</pre>
 			</section>
 
 
@@ -190,25 +321,119 @@
 
 			<section>
 				<h2>Basic Rust concurrency</h2>
+				<pre ng-non-bindable>
+					<code class="rust">
+
+
+
+
+					</code>
+				</pre>
+			</section>
+
+			<section>
+				<h2>Simple threads - first broken attempt</h2>
+				<pre ng-non-bindable>
+					<code class="rust">
+
+
+
+
+					</code>
+				</pre>
 			</section>
 
 
 			<section>
-				<h2>Simple threads</h2>
+				<h2>Simple threads - working with Arc</h2>
+				<pre ng-non-bindable>
+					<code class="rust">
+
+
+
+
+					</code>
+				</pre>
 			</section>
 
 
 			<section>
-				<h2>Mutexes</h2>
+				<h2>Shared mutable state - broken</h2>
+				<pre ng-non-bindable>
+					<code class="rust">
+
+
+
+
+					</code>
+				</pre>
 			</section>
 
+
+
 			<section>
-				<h2>Don't overdo looks</h2>
+				<h2>Mutexes: Shared mutable state - working</h2>
+				<pre ng-non-bindable>
+					<code class="rust">
+
+
+
+
+					</code>
+				</pre>
 			</section>
+
 
 			<section>
 				<h2>Channels</h2>
+				<pre ng-non-bindable>
+					<code class="rust">
+
+use std::thread;
+use std::sync::{Arc};
+use std::sync::mpsc;
+use std::sync::mpsc::{Sender, Receiver};
+
+fn main() {
+    let strings = vec![
+        String::from("Rust is awesome. Rust is fun."),
+        String::from("Rust can make system programming easier. Rust has no GC."),
+        String::from("multi-core programming is hard but Rust can make it easier")
+    ];
+    let mut threads = vec![];
+    let strings = Arc::new(strings);
+    let (tx, rx): (Sender&lt;usize&gt; , Receiver&lt;usize&gt;) = mpsc::channel();
+    for i in 0..3 {
+        let strings = strings.clone();
+        let tx = tx.clone();
+        threads.push(thread::spawn(move || {
+            let words: Vec&lt;&str&gt; = strings[i].split_whitespace().collect();
+            let count = words.iter().filter(|x| **x == "Rust").count();
+            tx.send(count).unwrap();
+        }));
+    }
+    let mut total_count = 0;
+    for _ in 0..3 {
+        let count = rx.recv().unwrap();
+        total_count += count;
+    }
+    println!("total count for \"Rust\":{:?}", total_count);
+    println!("\ndone!\n");
+}
+
+
+
+					</code>
+				</pre>
 			</section>
+
+
+
+
+			<section>
+				<h2>Don't overdo locks</h2>
+			</section>
+
 
 			<section>
 				<h2>Rust can't solve concurrency in distributed systems</h2>

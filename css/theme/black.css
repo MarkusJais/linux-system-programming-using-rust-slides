@@ -138,10 +138,12 @@ body {
   font-family: monospace; }
 
 .reveal pre code {
+  font-size: 70%; /* mj */
+  line-height: 1.0em; /* mj */
   display: block;
   padding: 5px;
   overflow: auto;
-  max-height: 400px;
+  max-height: 500px;
   word-wrap: normal;
   background: #3F3F3F;
   color: #DCDCDC; }
