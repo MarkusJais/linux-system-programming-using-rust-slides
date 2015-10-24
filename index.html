@@ -52,16 +52,13 @@
 			</section>
 
 			<section>
-				<h2>What is System programming?</h2>
-				<p>
-					TODO: Define System Programming
-				</p>
-			</section>
-
-			<section>
 				<h2>Programming languages for System Programming</h2>
 				<p>
-					C, C++
+					<ul>
+						<li class="fragment">C, C++</li>
+						<li class="fragment">Python, Ruby and  others can also ofte call system calls, e.g. fork()</li>
+						<li class="fragment">New: Rust, Swift 2 (once Open Source and available for Linux)</li>
+					</ul>
 				</p>
 
 			</section>
@@ -88,7 +85,6 @@
 						<li class="fragment">Less control than C/C++</li>
 						<li class="fragment">Overhead (but often very small)</li>
 						<li class="fragment">Gargabe collection (awesome most of the time but can be a show stopper)</li>
-						<li class="fragment">C interface not easy to work with</li>
 					</ul>
 				</p>
 
@@ -467,7 +463,7 @@ fn main() {
 			</section>
 
 
-			<section>
+				<!-- <section>
 				<h2>Posix Message queues</h2>
 				<pre ng-non-bindable>
 					<code class="rust">
@@ -479,11 +475,12 @@ fn main() {
 				</pre>
 			</section>
 
-
 			<section>
 				<h2>unsafe</h2>
-				TBD
+
 			</section>
+		-->
+
 
 			<!-- <section>
 				<h2>File IO</h2>
@@ -496,14 +493,13 @@ fn main() {
 
 			<section>
 				<h2>Basic Rust concurrency</h2>
-				<pre ng-non-bindable>
-					<code class="rust">
-
-
-						TBD, some general notes
-
-					</code>
-				</pre>
+				<p>
+					<ul>
+						<li class="fragment">Concurrency support in library</li>
+						<li class="fragment">Memory safety also applies to multi-threading</li>
+						<li class="fragment">Right now mostly low-level support. More coming, also look at crates.io</li>
+				 	</ul>
+				</p>
 			</section>
 
 			<section>
@@ -526,7 +522,7 @@ fn main() {
 
     for i in 0..strings.len() {
         threads.push(thread::spawn(move || {
-            println!("{:?}", strings);  // doesn't compile: capture of moved value: `strings`
+            println!("{:?}", strings[i]);  // doesn't compile: capture of moved value: `strings`
         }));
     }
 
@@ -684,6 +680,17 @@ fn main() {
 				</pre>
 			</section>
 
+			<section>
+				<h2>Don't overdo locks</h2>
+				<ul>
+					<li class="fragment">Logs are not free!</li>
+					<li class="fragment">Can kill scalability across many cores (Amdahls's Law)</li>
+					<li class="fragment">Use lock-free data structures where possible</li>
+					<li class="fragment">Avoid shared mutable state to avoid locks</li>
+					<li class="fragment" style="font-weight: bold">Most important! !!!Do performance tests!!!</li>
+				</ul>
+			</section>
+
 
 			<section>
 				<h2>Channels</h2>
@@ -731,21 +738,21 @@ fn main() {
 
 
 
-			<section>
-				<h2>Don't overdo locks</h2>
-				<ul>
-					<li class="fragment">Logs are not free!</li>
-					<li class="fragment">Can kill scalability across many cores (Amdahls's Law)</li>
-					<li class="fragment">Use lock-free data structures where possible</li>
-					<li class="fragment">Avoid shared mutable state to avoid locks</li>
-					<li class="fragment" style="font-weight: bold">Most important! !!!Do performance tests!!!</li>
-				</ul>
-			</section>
 
 
 			<section>
 				<h2>Rust can't solve concurrency in distributed systems</h2>
-				TODO add image of distributed database
+				<img src="img/distributed_systems.png"/>
+			</section>
+
+			<section>
+				<h2>Rust can't solve concurrency between more than 1 Rust programm</h2>
+				<ul>
+					<li class="fragment">File access</li>
+					<li class="fragment">Shared memory</li>
+					<li class="fragment">Other resources</li>
+					<li class="fragment" style="font-weight: bold">External locking (e.g. file locking) necessary</li>
+				</ul>
 			</section>
 
 
@@ -768,8 +775,8 @@ fn main() {
 			<section>
 				<h2>Recommended books</h2>
 				<ul>
-					<li>Book 1</li>
-					<li>Book 2</li>
+					<li>A Linux and UNIX System Programming Handbook by Michael Kerrisk</li>
+					<li>Linux System Programming, 2nd Edition, by Robert Love</li>
 				</ul>
 			</section>
 
@@ -783,6 +790,16 @@ fn main() {
 
 			<section>
 				<h2>Github links</h2>
+				<ul>
+					<li>Code: <a href="https://github.com/MarkusJais/linux-system-programming-using-rust">https://github.com/MarkusJais/linux-system-programming-using-rust</a></li>
+					<li>Slides: <a href="https://github.com/MarkusJais/linux-system-programming-using-rust-slides">https://github.com/MarkusJais/linux-system-programming-using-rust-slides</a></li>
+				</ul>
+
+			</section>
+
+			<section>
+				<h2>nix-rust</h2>
+				<a href="https://github.com/carllerche/nix-rust">https://github.com/carllerche/nix-rust</a>
 			</section>
 
 
