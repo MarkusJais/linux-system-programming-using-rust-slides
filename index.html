@@ -606,7 +606,7 @@ fn main() {
         String::from("multi-core programming is hard but Rust can make it easier")
     ];
     let mut threads = vec![];
-    let counts: HashMap<String, i32> = HashMap::new();
+    let counts: HashMap&lt;String, i32&gt; = HashMap::new();
     let strings = Arc::new(strings);
     let counts = Arc::new(counts);
     for i in 0..3 {
